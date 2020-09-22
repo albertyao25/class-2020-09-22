@@ -39,8 +39,11 @@ sep_old <-
   rename(id = course_id,
          title = course_title,
          name = course_name,
-         department = course_department) %>% 
-  filter(u_grad > 10)
+         department = course_department) %>%  
+  group_by(id) %>%
+  filter(u_grad > 10) %>%
+  mutate(u_grad = sum(u_grad)) %>%
+  distinct() 
 
 # But this is not correct! Look for Gov 50: Data. What do you see? What can you
 # do to clean it up?
