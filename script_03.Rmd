@@ -56,6 +56,25 @@ sep_old <-
 
 **Prompt:** Read in and clean the new data, creating an object called `sep_new`. 
 
+```{r, echo = FALSE}
+
+sep_new <- 
+  read_excel("new_data/class_enrollment_summary_by_term_9-21-2020.xlsx", 
+             skip = 3) %>% 
+  clean_names() %>% 
+  filter(! is.na(course_title)) %>% 
+  select(-grad, -non_degree, -x_reg, -vus, -employee, 
+         -withdraw, -total, -instructor_full_name, -course_section_code) %>%
+  rename(id = course_id,
+         title = course_title,
+         name = course_name,
+         department = course_department) %>%  
+  group_by(id) %>%
+  #filter(u_grad > 10) %>%
+  mutate(u_grad = sum(u_grad)) %>%
+  distinct() 
+
+```
 
 
 ### Scene 2
@@ -64,22 +83,44 @@ sep_old <-
 
 Before we start on the model, Wisdom suggests we should:
 
+- clearly define measurements and estimand (e.g. difference between undergrad enrollment today and from Sep 1)
+- make assumptions to limit out amount of missing data (i.e. different undergrad enrollments on a day to day, or the data from Sep 1 to Sep 2) For example, we made an assumption about dropping research courses having less than 10 people
 
 After we have a model, Temperance suggests we should:
 
+- understand limitations of our model and tools. For instance, you can estimate the general trend for enrollment, but you cannot account for individual variances
+- make sure data is valid. Should be careful not to introduce selection bias or change the assignment mechanism/selection mechanism 
 
 
 ### Scene 3
 
 **Prompt:** Which classes had the biggest increases and decreases in undergraduate enrollments between September 1 and today? Make a graphic that shows the 5 biggest increases and decreases. Make it look nice.
 
+```{r, echo = FALSE}
+
+sep_diff <- inner_join(sep_old, sep_new, "id", suffix = c(".new", ".old")) %>%
+  filter(u_grad.new >= 10 & u_grad.old >= 10) %>%
+  mutate(diff = u_grad.new - u_grad.old)
+
+large_diff <- sep_diff %>%
+  arrange(diff) %>%
+  slice(1:5)
+
+large_inc <- sep_diff %>%
+  arrange(desc(diff)) %>%
+  slice(1:5)
 
 
+```
 
 
 ## Scene 4
 
 **Prompt:**  What might have caused drops in these classes? Assume that one of the causes might have been the amount of work assigned in the first two weeks of class. Create a simplified ideal Preceptor Table (using a spreadsheet of your choice) with no missing data which would allow us to investigate this situation. What data is missing and why? Create an actual Preceptor Table, again using a spreadsheet. How might we investigate the effect of work assigned in the first two weeks? Would the estimated Average Treatment Effect be accurate? Why or why not? Put some bullet points here and be prepared to show your spreadsheet to the class.
+
+```{r}
+
+```
 
 
 ## Scene 5
